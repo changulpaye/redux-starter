@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from "@reduxjs/toolkit";
+import axios from "axios";
 import { getDifferenceInMinutes } from "../utils";
 import { apiCallBegan } from "./api";
 
@@ -27,7 +28,7 @@ const slice = createSlice({
     },
 
     bugAssignedToUser: (bugs, action) => {
-      const { id:bugId, userId } = action.payload;
+      const { id: bugId, userId } = action.payload;
       const i = bugs.list.findIndex((e) => e.id === bugId);
       bugs.list[i].userId = userId;
     },
@@ -43,14 +44,14 @@ const slice = createSlice({
     },
 
     bugRemoved: (bugs, action) => {
-     bugs.list = bugs.list.filter((bug) => bug.id !== action.payload.id);
+      bugs.list = bugs.list.filter((bug) => bug.id !== action.payload.id);
     },
   },
 });
 
-const {
+export const {
   bugAdded,
-  bugRemoved, 
+  bugRemoved,
   bugResolved,
   bugAssignedToUser,
   bugsReceived,
@@ -67,9 +68,9 @@ export const loadBugs = () => (dispatch, getState) => {
   const { lastFetch } = getState().entities.bugs;
   //Caching
   const diffInMinutes = getDifferenceInMinutes(lastFetch);
-  if(diffInMinutes < 10) return;
+  if (diffInMinutes < 10) return;
 
-  dispatch(
+  return  dispatch(
     apiCallBegan({
       url,
       onStart: bugsRequested.type,
@@ -79,6 +80,23 @@ export const loadBugs = () => (dispatch, getState) => {
   );
 };
 
+// make an API call
+// promise resolved => dispatch(success/error)
+// API Call without middleware ***** Voila!!!!
+// export const addBug = (bug) => async (dispatch) => {
+//   try {
+//     const { data } = await axios.request({
+//       baseURL: "http://localhost:3000/api",
+//       url: "/bugs",
+//       method: "post",
+//       data: bug,
+//     });
+//     dispatch(bugAdded(data));
+//   } catch (error) {
+//     dispatch(bugsRequestFailed({ message: error.message }));
+//   }
+// };
+
 export const addBug = bug => apiCallBegan({
   url,
   method:"post",
@@ -86,25 +104,28 @@ export const addBug = bug => apiCallBegan({
   onSuccess: bugAdded.type,
 })
 
-export const resolveBug = id => apiCallBegan({
-  url : url + '/' + id,
-  method: 'patch',
-  data: { resolved : true},
-  onSuccess: bugResolved.type
-})
+export const resolveBug = (id) =>
+  apiCallBegan({
+    url: url + "/" + id,
+    method: "patch",
+    data: { resolved: true },
+    onSuccess: bugResolved.type,
+  });
 
-export const assignBugToUser = (bugId, userId) => apiCallBegan({
-  url: url + '/' + bugId,
-  method: 'patch',
-  data: { userId},
-  onSuccess: bugAssignedToUser.type
-})
+export const assignBugToUser = (bugId, userId) =>
+  apiCallBegan({
+    url: url + "/" + bugId,
+    method: "patch",
+    data: { userId },
+    onSuccess: bugAssignedToUser.type,
+  });
 
-export const removeBug = id => apiCallBegan({
-  url: url + '/' + id,
-  method: "delete",
-  onSuccess: bugRemoved.type
-})
+export const removeBug = (id) =>
+  apiCallBegan({
+    url: url + "/" + id,
+    method: "delete",
+    onSuccess: bugRemoved.type,
+  });
 
 // *************** SELECTORS **********************/
 //--------------------------------------------------------------/

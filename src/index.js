@@ -4,6 +4,8 @@ import {
   loadBugs,
   removeBug,
   assignBugToUser,
+  addBug,
+  resolveBug
 } from "./store/bugs";
 import { projectAdded } from "./store/projects";
 import { userAdded } from "./store/users";
@@ -20,9 +22,10 @@ store.dispatch(loadBugs());
 
 
 setTimeout(() => {
-  store.dispatch(removeBug(4));
+  // store.dispatch(removeBug(4));
   // store.dispatch(assignBugToUser(1, 4));
-  // store.dispatch(resolveBug(1));
+  store.dispatch(resolveBug(1));
+  // store.dispatch(addBug({ description: 'a'}))
 }, 2000);
 // store.dispatch(projectAdded({ name: 'Project 1'}));
 // store.dispatch(bugAdded({ description: "Bug 1" }));
